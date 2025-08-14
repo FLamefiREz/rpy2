@@ -13,13 +13,18 @@ cffi_mode_request = rpy2.situation.get_cffi_mode()
 
 # TODO: Separate the functions in the module from the side-effect of
 # finding R_HOME and opening the shared library.
-R_HOME = rpy2.situation.get_r_home()
+R_HOME = r"C:\Program Files\R\R-4.5.1"
 
 if os.name == 'nt':
     if R_HOME is not None:
         try:
-            for libpath in rpy2.situation.get_r_flags(R_HOME, '--ldflags')[0].L:
-                os.add_dll_directory(libpath)  # type: ignore[attr-defined]
+            if platform.machine() == "AMD64" and platform.system() == "Windows":
+                os.add_dll_directory(R_HOME.replace("\\bin\\x64",""))
+            else:
+                for libpath in rpy2.situation.get_r_flags(R_HOME, '--ldflags')[0].L:
+                    os.add_dll_directory(libpath)  # type: ignore[attr-defined]
+            # for libpath in rpy2.situation.get_r_flags(R_HOME, '--ldflags')[0].L:
+            #     os.add_dll_directory(libpath)  # type: ignore[attr-defined]
         except rpy2.situation.subprocess.CalledProcessError:
             if platform.machine().lower() == "arm64":
                 libpath = os.path.join(R_HOME, "bin", "R.dll")
